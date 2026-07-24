@@ -1,6 +1,7 @@
-import Header from "@/components/ui/header";
+import Header from "@/components/ui/Header";
 import HeroSection from "@/components/ui/heroSection";
 import VesionSection from "@/components/ui/vesionSection";
+import Footer from "@/components/ui/Footer";
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
       <Header />
       <HeroSection />
       <VesionSection />
+      <Footer />
     </div>
   );
 }
