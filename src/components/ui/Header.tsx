@@ -6,7 +6,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { FaSchool } from "react-icons/fa6";
 import { HiOutlineMenu } from "react-icons/hi";
 
-export default function headertest() {
+export default function header() {
   const [openNav, setOpenNav] = useState(false);
   return (
     <section className="w-full flex justify-center items-center">
