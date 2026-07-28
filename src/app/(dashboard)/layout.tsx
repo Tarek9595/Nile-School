@@ -1,5 +1,5 @@
 "use client";
-import { useTsData } from "@/store";
+import { useLoader, useTsData } from "@/store";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { FaSchool } from "react-icons/fa";
@@ -17,6 +17,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { startLoadingNavigation } = useLoader();
   const { systemRole, logout } = useTsData();
   const router = useRouter();
   const pathname = usePathname();
@@ -83,8 +84,10 @@ export default function DashboardLayout({
         ? studentSys
         : [];
   const handleLogout = () => {
-    router.push("/");
-    logout();
+    startLoadingNavigation(() => {
+      logout();
+      router.push("/");
+    });
   };
 
   return (

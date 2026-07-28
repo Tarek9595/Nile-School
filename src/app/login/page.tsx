@@ -3,15 +3,19 @@
 import axios from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
-import { domain, useTsData } from "@/store/index";
+import { domain, useTsData, useLoader } from "@/store/index";
 import { useRouter } from "next/navigation";
-import { FaBell, FaSchool } from "react-icons/fa6";
+import { FaBell, FaRegEye, FaRegEyeSlash, FaSchool } from "react-icons/fa6";
 import { GoShieldCheck } from "react-icons/go";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Login() {
+  const { startLoadingNavigation } = useLoader();
   const { token, setToken, systemRole, setSystemRole, setUserData } =
     useTsData();
   const router = useRouter();
+  const [showPass, setShowPass] = useState(false);
 
   const loginSchema = Yup.object().shape({
     identifier: Yup.string().required("هذا الحقل مطلوب"),
@@ -28,50 +32,71 @@ export default function Login() {
     rememberMe: false,
   };
 
-  const handleLogin = async (values) => {
-    const data = {
-      identifier: values.identifier,
-      password: values.password,
-    };
-    const loginUrl = domain + "api/auth/local";
+  const handleLogin = (values) => {
+    startLoadingNavigation(async () => {
+      try {
+        const data = {
+          identifier: values.identifier,
+          password: values.password,
+        };
 
-    try {
-      const loginRes = await axios.post(loginUrl, data);
-      const jwt = loginRes.data.jwt;
+        const formattedDomain = domain.endsWith("/") ? domain : `${domain}/`;
+        const loginUrl = `${formattedDomain}api/auth/local`;
 
-      setToken(jwt);
+        const loginRes = await axios.post(loginUrl, data);
+        const jwt = loginRes.data.jwt;
+        setToken(jwt);
 
-      const userUrl =
-        domain +
-        "api/users/me?populate[ts_teacher][populate]=*&populate[ts_student][populate]=*";
-      const userRes = await axios.get(userUrl, {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      });
+        const userUrl = `${formattedDomain}api/users/me?populate[ts_teacher][populate]=*&populate[ts_student][populate]=*`;
+        const userRes = await axios.get(userUrl, {
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
 
-      let currentUserData = null;
-      let role = null;
+        let currentUserData = null;
+        let role = null;
 
-      if (userRes.data.ts_teacher) {
-        currentUserData = userRes.data.ts_teacher;
-        role = userRes.data.ts_teacher.tsRole;
-      } else if (userRes.data.ts_student) {
-        currentUserData = userRes.data.ts_student;
-        role = userRes.data.ts_student.tsRole;
+        if (userRes.data.ts_teacher) {
+          currentUserData = userRes.data.ts_teacher;
+          role = userRes.data.ts_teacher.tsRole;
+        } else if (userRes.data.ts_student) {
+          currentUserData = userRes.data.ts_student;
+          role = userRes.data.ts_student.tsRole;
+        }
+
+        if (role && currentUserData) {
+          setUserData(currentUserData);
+          setSystemRole(role);
+          router.push(`/${role.toLowerCase()}`);
+        }
+      } catch (error) {
+        if (
+          error?.response?.status === 400 ||
+          error?.response?.status === 401
+        ) {
+          toast.error(
+            "بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور",
+            {
+              duration: 4000,
+              position: "top-center",
+            },
+          );
+        } else if (error?.response?.status === 404) {
+          toast.error("رابط الخدمة غير موجود، يرجى التأكد من الـ Domain", {
+            duration: 4000,
+            position: "top-center",
+          });
+        } else {
+          toast.error(
+            "تعذر الاتصال بالخادم، يرجى التأكد من الـ Domain وحالة الشبكة",
+            {
+              duration: 4000,
+              position: "top-center",
+            },
+          );
+        }
       }
-
-      if (role && currentUserData) {
-        setUserData(currentUserData);
-        setSystemRole(role);
-
-        router.push(`/${role.toLowerCase()}`);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    });
   };
-
   return (
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
       <div
@@ -136,7 +161,7 @@ export default function Login() {
         </div>
       </div>
 
-      <div className="flex w-full lg:w-[65%] xl:w-[70%] items-center justify-center bg-background px-4 py-6 sm:px-6 md:px-12 lg:px-24">
+      <div className="flex grow lg:w-[65%] xl:w-[70%] items-center justify-center bg-background px-4 py-6 sm:px-6 md:px-12 lg:px-24">
         <div className="w-full max-w-md" dir="rtl">
           <div className="mb-5 sm:mb-8 text-center lg:text-right">
             <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
@@ -175,20 +200,28 @@ export default function Login() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1 sm:gap-1.5">
+                <div className=" flex flex-col gap-1 sm:gap-1.5">
                   <label className="text-[11px] sm:text-sm text-texty-color font-bold">
                     كلمة المرور
                   </label>
-                  <Field
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    className={`w-full rounded-lg border-2 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm outline-none transition-all ${
-                      touched.password && errors.password
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-slate-300 focus:border-blue-500"
-                    }`}
-                  />
+                  <div className="relative">
+                    <Field
+                      name="password"
+                      type={`${showPass ? "text" : "password"}`}
+                      placeholder="••••••••"
+                      className={`w-full rounded-lg border-2 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm outline-none transition-all ${
+                        touched.password && errors.password
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-slate-300 focus:border-blue-500"
+                      }`}
+                    />
+                    <div
+                      className="absolute left-2.5 bottom-2.75 sm:bottom-4 text-main-color/50 cursor-pointer"
+                      onClick={() => setShowPass(!showPass)}
+                    >
+                      {showPass ? <FaRegEye /> : <FaRegEyeSlash />}
+                    </div>
+                  </div>
                   <ErrorMessage
                     name="password"
                     component="p"

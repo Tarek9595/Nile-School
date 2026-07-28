@@ -5,6 +5,8 @@ import { useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { FaSchool } from "react-icons/fa6";
 import { HiOutlineMenu } from "react-icons/hi";
+import { useLoader } from "@/store";
+import { useRouter } from "next/navigation";
 
 export default function header() {
   const [openNav, setOpenNav] = useState(false);
@@ -31,10 +33,20 @@ export default function header() {
 }
 
 function WideNav() {
+  const router = useRouter();
+  const { startLoadingNavigation } = useLoader();
+
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    startLoadingNavigation(() => {
+      router.push("/login");
+    });
+  };
   return (
     <nav className="grow hidden md:flex justify-between items-center">
       <Link
         href="/login"
+        onClick={handleLoginClick}
         className="py-2.5 px-8 rounded-full bg-main-color text-white font-medium"
       >
         تسجيل الدخول

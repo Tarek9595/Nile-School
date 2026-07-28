@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/ui/SmoothScroll";
+import PageLoader from "@/components/ui/PageLoader";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -24,7 +25,10 @@ export default function RootLayout({
       <body
         className={`${cairo.className} h-dvh w-full overflow-y-auto flex flex-col`}
       >
-        <SmoothScroll>{children}</SmoothScroll>
+        <SmoothScroll>
+          <PageLoader />
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   );
