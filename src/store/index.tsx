@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import toast from "react-hot-toast";
 
-export const domain = "https://pos.skyready.onliwne/";
+export const domain = "https://pos.skyready.online/";
 
 export const useTsData = create(
   persist(
@@ -43,14 +43,39 @@ export const useLoader = create((set) => ({
     );
 
     try {
-      await Promise.race([
+      const taskWithTimeout = Promise.race([
         Promise.resolve().then(() => asyncTask()),
         timeoutPromise,
       ]);
+
+      await taskWithTimeout;
       await minDelayPromise;
     } catch (error) {
+      console.error("Navigation/Data fetching error:", error);
+
       if (error?.message === "TIMEOUT_ERROR") {
         toast.error("عذراً، الخادم لا يستجيب حالياً. يرجى المحاولة لاحقاً", {
+          duration: 4000,
+          position: "top-center",
+        });
+      } else if (
+        error?.response?.status === 400 ||
+        error?.response?.status === 401
+      ) {
+        toast.error(
+          "بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور",
+          {
+            duration: 4000,
+            position: "top-center",
+          },
+        );
+      } else if (error?.response?.status === 404) {
+        toast.error("رابط الخدمة غير موجود، يرجى التأكد من الـ Domain", {
+          duration: 4000,
+          position: "top-center",
+        });
+      } else {
+        toast.error("حدث خطأ أثناء الاتصال بالخادم، يرجى إعادة المحاولة", {
           duration: 4000,
           position: "top-center",
         });

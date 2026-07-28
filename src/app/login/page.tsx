@@ -34,69 +34,41 @@ export default function Login() {
 
   const handleLogin = (values) => {
     startLoadingNavigation(async () => {
-      try {
-        const data = {
-          identifier: values.identifier,
-          password: values.password,
-        };
+      const data = {
+        identifier: values.identifier,
+        password: values.password,
+      };
 
-        const formattedDomain = domain.endsWith("/") ? domain : `${domain}/`;
-        const loginUrl = `${formattedDomain}api/auth/local`;
+      const loginUrl = domain + `api/auth/local`;
 
-        const loginRes = await axios.post(loginUrl, data);
-        const jwt = loginRes.data.jwt;
-        setToken(jwt);
+      const loginRes = await axios.post(loginUrl, data);
+      const jwt = loginRes.data.jwt;
+      setToken(jwt);
 
-        const userUrl = `${formattedDomain}api/users/me?populate[ts_teacher][populate]=*&populate[ts_student][populate]=*`;
-        const userRes = await axios.get(userUrl, {
-          headers: { Authorization: `Bearer ${jwt}` },
-        });
+      const userUrl = `${domain}api/users/me?populate[ts_teacher][populate]=*&populate[ts_student][populate]=*`;
+      const userRes = await axios.get(userUrl, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
 
-        let currentUserData = null;
-        let role = null;
+      let currentUserData = null;
+      let role = null;
 
-        if (userRes.data.ts_teacher) {
-          currentUserData = userRes.data.ts_teacher;
-          role = userRes.data.ts_teacher.tsRole;
-        } else if (userRes.data.ts_student) {
-          currentUserData = userRes.data.ts_student;
-          role = userRes.data.ts_student.tsRole;
-        }
+      if (userRes.data.ts_teacher) {
+        currentUserData = userRes.data.ts_teacher;
+        role = userRes.data.ts_teacher.tsRole;
+      } else if (userRes.data.ts_student) {
+        currentUserData = userRes.data.ts_student;
+        role = userRes.data.ts_student.tsRole;
+      }
 
-        if (role && currentUserData) {
-          setUserData(currentUserData);
-          setSystemRole(role);
-          router.push(`/${role.toLowerCase()}`);
-        }
-      } catch (error) {
-        if (
-          error?.response?.status === 400 ||
-          error?.response?.status === 401
-        ) {
-          toast.error(
-            "بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور",
-            {
-              duration: 4000,
-              position: "top-center",
-            },
-          );
-        } else if (error?.response?.status === 404) {
-          toast.error("رابط الخدمة غير موجود، يرجى التأكد من الـ Domain", {
-            duration: 4000,
-            position: "top-center",
-          });
-        } else {
-          toast.error(
-            "تعذر الاتصال بالخادم، يرجى التأكد من الـ Domain وحالة الشبكة",
-            {
-              duration: 4000,
-              position: "top-center",
-            },
-          );
-        }
+      if (role && currentUserData) {
+        setUserData(currentUserData);
+        setSystemRole(role);
+        router.push(`/${role.toLowerCase()}`);
       }
     });
   };
+
   return (
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
       <div
