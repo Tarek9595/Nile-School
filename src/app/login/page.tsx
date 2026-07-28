@@ -9,7 +9,8 @@ import { FaBell, FaSchool } from "react-icons/fa6";
 import { GoShieldCheck } from "react-icons/go";
 
 export default function Login() {
-  const { setToken, setSystemRole, setUserData } = useTsData();
+  const { token, setToken, systemRole, setSystemRole, setUserData } =
+    useTsData();
   const router = useRouter();
 
   const loginSchema = Yup.object().shape({
@@ -41,7 +42,8 @@ export default function Login() {
       setToken(jwt);
 
       const userUrl =
-        domain + "api/users/me?populate[ts_teacher]=*&populate[ts_student]=*";
+        domain +
+        "api/users/me?populate[ts_teacher][populate]=*&populate[ts_student][populate]=*";
       const userRes = await axios.get(userUrl, {
         headers: {
           Authorization: `Bearer ${jwt}`,

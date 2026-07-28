@@ -10,6 +10,7 @@ import { SlCalender } from "react-icons/sl";
 import { LuGraduationCap } from "react-icons/lu";
 import { CiChat1 } from "react-icons/ci";
 import { IoIosLogOut } from "react-icons/io";
+import TeacherHeader from "./TeacherHeader";
 
 export default function DashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function DashboardLayout({
   const { systemRole, logout } = useTsData();
   const router = useRouter();
   const pathname = usePathname();
+
   const teacherSys = [
     {
       title: "لوحة التحكم",
@@ -84,6 +86,7 @@ export default function DashboardLayout({
     router.push("/");
     logout();
   };
+
   return (
     <div className="flex" dir="rtl">
       <aside className="w-72 h-dvh bg-main-color text-white text-xl font-bold flex flex-col gap-3">
@@ -125,11 +128,11 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <main className="w-full flex-1 bg-slate-50 border border-black">
-        <div>لوحة تحكم {systemRole}</div>
-        <div className="bg-indigo-200 text-3xl text-red-600 flex justify-center items-center h-dvh">
-          {children}
+      <main className="w-full flex-1 bg-[#f4f4f4]">
+        <div className="w-full p-6 bg-white border-b-2 border-[#E2E8F0] flex flex-col gap-2">
+          <TeacherHeader />
         </div>
+        <div className="flex justify-center items-center h-dvh">{children}</div>
       </main>
     </div>
   );
