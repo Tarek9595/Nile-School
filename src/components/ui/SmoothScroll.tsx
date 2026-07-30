@@ -10,8 +10,8 @@ export default function SmoothScroll({
 }) {
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.5, // زوّد الرقم ده لو عاوز التمرير يكون أبطأ (مثلاً 1.8 أو 2.0)
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // معادلة تنعيم الحركة
+      duration: 1.5,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
 

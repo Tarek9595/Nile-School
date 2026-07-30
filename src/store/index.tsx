@@ -4,7 +4,21 @@ import toast from "react-hot-toast";
 
 export const domain = "https://pos.skyready.online/";
 
-export const useTsData = create(
+interface TSDataState {
+  token: string;
+  systemRole: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  userData: any;
+
+  setToken: (newValue: string) => void;
+  setSystemRole: (newValue: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setUserData: (newValue: any) => void;
+
+  logout: () => void;
+}
+
+export const useTsData = create<TSDataState>()(
   persist(
     (set) => ({
       token: "",
@@ -23,7 +37,17 @@ export const useTsData = create(
   ),
 );
 
-export const useLoader = create((set) => ({
+interface LoaderState {
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  startLoadingNavigation: (
+    asyncTask: () => Promise<unknown> | void,
+    delay?: number,
+    timeoutDuration?: number,
+  ) => Promise<void>;
+}
+
+export const useLoader = create<LoaderState>()((set) => ({
   isLoading: false,
   setIsLoading: (loading) => set({ isLoading: loading }),
 
@@ -52,15 +76,17 @@ export const useLoader = create((set) => ({
       await minDelayPromise;
     } catch (error) {
       console.error("Navigation/Data fetching error:", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const err = error as any;
 
-      if (error?.message === "TIMEOUT_ERROR") {
+      if (err?.message === "TIMEOUT_ERROR") {
         toast.error("عذراً، الخادم لا يستجيب حالياً. يرجى المحاولة لاحقاً", {
           duration: 4000,
           position: "top-center",
         });
       } else if (
-        error?.response?.status === 400 ||
-        error?.response?.status === 401
+        err?.response?.status === 400 ||
+        err?.response?.status === 401
       ) {
         toast.error(
           "بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور",
@@ -69,7 +95,7 @@ export const useLoader = create((set) => ({
             position: "top-center",
           },
         );
-      } else if (error?.response?.status === 404) {
+      } else if (err?.response?.status === 404) {
         toast.error("رابط الخدمة غير موجود، يرجى التأكد من الـ Domain", {
           duration: 4000,
           position: "top-center",

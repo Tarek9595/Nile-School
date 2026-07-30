@@ -8,12 +8,16 @@ import { useRouter } from "next/navigation";
 import { FaBell, FaRegEye, FaRegEyeSlash, FaSchool } from "react-icons/fa6";
 import { GoShieldCheck } from "react-icons/go";
 import { useState } from "react";
-import toast from "react-hot-toast";
+
+interface LoginFormValues {
+  identifier: string;
+  password: string;
+  rememberMe: boolean;
+}
 
 export default function Login() {
   const { startLoadingNavigation } = useLoader();
-  const { token, setToken, systemRole, setSystemRole, setUserData } =
-    useTsData();
+  const { setToken, setSystemRole, setUserData } = useTsData();
   const router = useRouter();
   const [showPass, setShowPass] = useState(false);
 
@@ -32,7 +36,7 @@ export default function Login() {
     rememberMe: false,
   };
 
-  const handleLogin = (values) => {
+  const handleLogin = (values: LoginFormValues) => {
     startLoadingNavigation(async () => {
       const data = {
         identifier: values.identifier,

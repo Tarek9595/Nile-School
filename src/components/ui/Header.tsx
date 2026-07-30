@@ -8,7 +8,7 @@ import { HiOutlineMenu } from "react-icons/hi";
 import { useLoader } from "@/store";
 import { useRouter } from "next/navigation";
 
-export default function header() {
+export default function Header() {
   const [openNav, setOpenNav] = useState(false);
   return (
     <section className="w-full flex justify-center items-center">
@@ -36,7 +36,7 @@ function WideNav() {
   const router = useRouter();
   const { startLoadingNavigation } = useLoader();
 
-  const handleLoginClick = (e) => {
+  const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     startLoadingNavigation(() => {
       router.push("/login");
@@ -68,11 +68,16 @@ function WideNav() {
   );
 }
 
-function NarrowNav({ openNav, setOpenNav }) {
+interface NarrowNavProps {
+  openNav: boolean;
+  setOpenNav: (open: boolean) => void;
+}
+
+function NarrowNav({ openNav, setOpenNav }: NarrowNavProps) {
   const handleLinkClick = () => setOpenNav(false);
   return (
     <div
-      className={`fixed inset-0 z-[10000] transition-all duration-300 ${
+      className={`fixed inset-0 z-10000 transition-all duration-300 ${
         openNav ? "pointer-events-auto" : "pointer-events-none"
       }`}
     >
