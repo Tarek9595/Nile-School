@@ -21,10 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" className={`${cairo.variable} h-full antialiased`}>
-      <body
-        className={`${cairo.className} min-h-screen w-full overflow-y-auto flex flex-col`}
-      >
+    <html lang="ar" className={`${cairo.variable} antialiased`}>
+      <body className={`${cairo.className} w-full`}>
         <SmoothScroll>
           <PageLoader />
           {children}

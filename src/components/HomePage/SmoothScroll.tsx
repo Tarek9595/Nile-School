@@ -10,7 +10,7 @@ export default function SmoothScroll({
 }) {
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.5,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
@@ -22,7 +22,15 @@ export default function SmoothScroll({
 
     requestAnimationFrame(raf);
 
+    // إعادة حساب الارتفاع عند تحميل الصور أو المحتوى
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+    });
+
+    resizeObserver.observe(document.body);
+
     return () => {
+      resizeObserver.disconnect();
       lenis.destroy();
     };
   }, []);
