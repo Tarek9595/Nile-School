@@ -1,3 +1,5 @@
+import StudentSelfResult from "@/components/StudentPage/StudentSelfResult";
+
 export default function GradesPage() {
-  return <div>نتائج الاختبارات للطالب</div>;
+  return <StudentSelfResult />;
 }

@@ -1,3 +1,5 @@
+import StudentSelfReview from "@/components/StudentPage/StudentSelfReview";
+
 export default function ReviewsPage() {
-  return <div>تقييمات المدرسين للطالب</div>;
+  return <StudentSelfReview />;
 }

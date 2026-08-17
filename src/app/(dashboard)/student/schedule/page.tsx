@@ -1,3 +1,5 @@
+import StudentSchedule from "@/components/StudentPage/StudentSchedule";
+
 export default function Schedule() {
-  return <div>جدول حصص الطالب</div>;
+  return <StudentSchedule />;
 }

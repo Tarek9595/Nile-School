@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LuLayoutGrid } from "react-icons/lu";
 import { FaUserCheck } from "react-icons/fa6";
 import { ImUsers } from "react-icons/im";
-import AuroraBackground from "./AuroraBackground";
+import AuroraBackground from "@/components/Common/AuroraBackground";
 
 export default function HeroSection() {
   return (

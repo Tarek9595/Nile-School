@@ -1,3 +1,5 @@
+import StudentSelfHWorks from "@/components/StudentPage/StudentSelfHWorks";
+
 export default function HomeworkPage() {
-  return <div>الواجبات المنزلية للطالب</div>;
+  return <StudentSelfHWorks />;
 }

@@ -1,3 +1,5 @@
+import TeacherSchedule from "@/components/TeacherPage/TeacherSchedule";
+
 export default function Schedule() {
-  return <div>جدول الحصص الدراسي الخاص بالمدرس</div>;
+  return <TeacherSchedule />;
 }

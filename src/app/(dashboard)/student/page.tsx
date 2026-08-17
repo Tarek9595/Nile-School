@@ -1,3 +1,5 @@
+import StudentCPanal from "@/components/StudentPage/StudentCPanal";
+
 export default function Student() {
-  return <div>لوحة تحكم الطالب</div>;
+  return <StudentCPanal />;
 }

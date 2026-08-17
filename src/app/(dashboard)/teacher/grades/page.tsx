@@ -1,3 +1,5 @@
+import MonitorGrades from "@/components/TeacherPage/TeacherMonitor/MonitorGrades";
+
 export default function GradesPage() {
-  return <div>نتائج اختبارات الفصول</div>;
+  return <MonitorGrades />;
 }
