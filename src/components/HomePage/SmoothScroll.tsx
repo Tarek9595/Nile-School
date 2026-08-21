@@ -22,7 +22,6 @@ export default function SmoothScroll({
 
     requestAnimationFrame(raf);
 
-    // إعادة حساب الارتفاع عند تحميل الصور أو المحتوى
     const resizeObserver = new ResizeObserver(() => {
       lenis.resize();
     });

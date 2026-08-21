@@ -16,6 +16,7 @@ interface LoginFormValues {
 }
 
 export default function Login() {
+  const [crrEmail, setCrrEmail] = useState("");
   const { startLoadingNavigation } = useLoader();
   const { setToken, setSystemRole, setUserData } = useTsData();
   const router = useRouter();
@@ -31,8 +32,8 @@ export default function Login() {
   });
 
   const initialValues = {
-    identifier: "",
-    password: "",
+    identifier: crrEmail,
+    password: "Admin@123",
     rememberMe: false,
   };
 
@@ -137,7 +138,28 @@ export default function Login() {
         </div>
       </div>
 
-      <div className="flex grow lg:w-[65%] xl:w-[70%] items-center justify-center bg-background px-4 py-6 sm:px-6 md:px-12 lg:px-24">
+      <div className="flex flex-col gap-10 grow lg:w-[65%] xl:w-[70%] items-center justify-center bg-background px-4 py-6 sm:px-6 md:px-12 lg:px-24">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
+            اختر حساب تسجيل الدخول
+          </h1>
+          <div className="flex justify-center items-center gap-5">
+            <button
+              type="button"
+              onClick={() => setCrrEmail("ts_teacher_sameh895@gmail.com")}
+              className="mt-1 w-full rounded-lg bg-blue-600 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+            >
+              حساب المدرس
+            </button>
+            <button
+              type="button"
+              onClick={() => setCrrEmail("ts_student_khaled369@gmail.com")}
+              className="mt-1 w-full rounded-lg bg-blue-600 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+            >
+              حساب الطالب
+            </button>
+          </div>
+        </div>
         <div className="w-full max-w-md" dir="rtl">
           <div className="mb-5 sm:mb-8 text-center lg:text-right">
             <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground">
@@ -149,6 +171,7 @@ export default function Login() {
           </div>
 
           <Formik
+            enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={loginSchema}
             onSubmit={handleLogin}

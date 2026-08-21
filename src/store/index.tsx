@@ -7,12 +7,10 @@ export const domain = "https://pos.skyready.online/";
 interface TSDataState {
   token: string;
   systemRole: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userData: any;
 
   setToken: (newValue: string) => void;
   setSystemRole: (newValue: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setUserData: (newValue: any) => void;
 
   logout: () => void;

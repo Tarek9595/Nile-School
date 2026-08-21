@@ -39,7 +39,7 @@ export default function StudentSelfHWorks() {
 
       if (activeTab === "pending") return !isSubmitted;
       if (activeTab === "delivered") return isSubmitted;
-      return true; // حالة "all"
+      return true;
     });
   }, [activeTab, deliveredHomeworks]);
 
