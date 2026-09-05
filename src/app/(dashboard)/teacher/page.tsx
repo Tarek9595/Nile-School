@@ -1,6 +1,3 @@
-"use client";
-export const dynamic = "force-dynamic";
-
 import ControlPanal from "@/components/TeacherPage/TeacherPanal/controlPanal";
 
 export default function TeacherPage() {
