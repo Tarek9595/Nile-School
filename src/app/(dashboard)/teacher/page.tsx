@@ -1,3 +1,5 @@
+"use client";
+
 import ControlPanal from "@/components/TeacherPage/TeacherPanal/controlPanal";
 
 export default function TeacherPage() {
