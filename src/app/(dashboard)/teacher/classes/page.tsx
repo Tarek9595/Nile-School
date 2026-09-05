@@ -1,6 +1,12 @@
+"use client";
+
 import ClassCard from "@/components/TeacherPage/TeacherClasses/ClassCard";
+import { useTeacherClasses, useTsData } from "@/store";
 
 export default function ClassesPage() {
+  const { TeacherClasses } = useTeacherClasses();
+  const { userData } = useTsData();
+  const subject = userData?.ts_subject?.name || "";
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -15,27 +21,9 @@ export default function ClassesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
-        <ClassCard />
+        {TeacherClasses.map((el) => (
+          <ClassCard key={el.documentId} classItem={el} subject={subject} />
+        ))}
       </div>
     </div>
   );

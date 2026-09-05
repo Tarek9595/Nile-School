@@ -4,128 +4,6 @@ import toast from "react-hot-toast";
 
 export const domain = "https://pos.skyready.online/";
 
-interface TSDataState {
-  token: string;
-  systemRole: string;
-  userData: any;
-
-  setToken: (newValue: string) => void;
-  setSystemRole: (newValue: string) => void;
-  setUserData: (newValue: any) => void;
-
-  logout: () => void;
-}
-
-export const useTsData = create<TSDataState>()(
-  persist(
-    (set) => ({
-      token: "",
-      systemRole: "",
-      userData: null,
-
-      setToken: (newValue) => set({ token: newValue }),
-      setSystemRole: (newValue) => set({ systemRole: newValue }),
-      setUserData: (newValue) => set({ userData: newValue }),
-
-      logout: () => set({ token: "", systemRole: "", userData: null }),
-    }),
-    {
-      name: "ts-data",
-    },
-  ),
-);
-
-interface LoaderState {
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
-  startLoadingNavigation: (
-    asyncTask: () => Promise<unknown> | void,
-    delay?: number,
-    timeoutDuration?: number,
-  ) => Promise<void>;
-}
-
-export const useLoader = create<LoaderState>()((set) => ({
-  isLoading: false,
-  setIsLoading: (loading) => set({ isLoading: loading }),
-
-  startLoadingNavigation: async (
-    asyncTask,
-    delay = 1500,
-    timeoutDuration = 10000,
-  ) => {
-    set({ isLoading: true });
-
-    const minDelayPromise = new Promise((resolve) =>
-      setTimeout(resolve, delay),
-    );
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("TIMEOUT_ERROR")), timeoutDuration),
-    );
-
-    try {
-      const taskWithTimeout = Promise.race([
-        Promise.resolve().then(() => asyncTask()),
-        timeoutPromise,
-      ]);
-
-      await taskWithTimeout;
-      await minDelayPromise;
-    } catch (error) {
-      console.error("Navigation/Data fetching error:", error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const err = error as any;
-
-      if (err?.message === "TIMEOUT_ERROR") {
-        toast.error("عذراً، الخادم لا يستجيب حالياً. يرجى المحاولة لاحقاً", {
-          duration: 4000,
-          position: "top-center",
-        });
-      } else if (
-        err?.response?.status === 400 ||
-        err?.response?.status === 401
-      ) {
-        toast.error(
-          "بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور",
-          {
-            duration: 4000,
-            position: "top-center",
-          },
-        );
-      } else if (err?.response?.status === 404) {
-        toast.error("رابط الخدمة غير موجود، يرجى التأكد من الـ Domain", {
-          duration: 4000,
-          position: "top-center",
-        });
-      } else {
-        toast.error("حدث خطأ أثناء الاتصال بالخادم، يرجى إعادة المحاولة", {
-          duration: 4000,
-          position: "top-center",
-        });
-      }
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-}));
-
-interface modalState {
-  showModal: boolean;
-  setModal: (newValue: boolean) => void;
-}
-
-export const useAudienceModal = create<modalState>((set) => ({
-  showModal: false,
-  setModal: (newValue) => set({ showModal: newValue }),
-}));
-
-export const toArabicDigits = (value: string | number): string => {
-  const map = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
-  return String(value).replace(/[0-9]/g, (d) => map[Number(d)]);
-};
-
-export const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"];
 export const periodTimes = [
   { period: "الحصة ١", time: "٠٧:٣٠ - ٠٨:١٥" },
   { period: "الحصة ٢", time: "٠٨:١٥ - ٠٩:٠٠" },
@@ -138,114 +16,6 @@ export interface ScheduleSlot {
   className: string;
   room: string;
 }
-
-export interface DaySchedule {
-  day: string;
-  slots: ScheduleSlot[];
-}
-
-export const schedule: DaySchedule[] = [
-  {
-    day: "الأحد",
-    slots: [
-      {
-        period: "الحصة ١",
-        className: "فصل ١/١",
-        room: "قاعة ١٢",
-      },
-      {
-        period: "الحصة ٢",
-        className: "فصل ١/٢",
-        room: "قاعة ١٤",
-      },
-      {
-        period: "الحصة ٤",
-        className: "فصل ٢/١",
-        room: "قاعة ٢١",
-      },
-    ],
-  },
-  {
-    day: "الإثنين",
-    slots: [
-      {
-        period: "الحصة ١",
-        className: "فصل ١/٣",
-        room: "قاعة ١٦",
-      },
-      {
-        period: "الحصة ٣",
-        className: "فصل ١/١",
-        room: "قاعة ١٢",
-      },
-      {
-        period: "الحصة ٥",
-        className: "فصل ١/٢",
-        room: "قاعة ١٤",
-      },
-    ],
-  },
-  {
-    day: "الثلاثاء",
-    slots: [
-      {
-        period: "الحصة ٢",
-        className: "فصل ٢/١",
-        room: "قاعة ٢١",
-      },
-      {
-        period: "الحصة ٤",
-        className: "فصل ١/٣",
-        room: "قاعة ١٦",
-      },
-    ],
-  },
-  {
-    day: "الأربعاء",
-    slots: [
-      {
-        period: "الحصة ١",
-        className: "فصل ١/٢",
-        room: "قاعة ١٤",
-      },
-      {
-        period: "الحصة ٣",
-        className: "فصل ١/١",
-        room: "قاعة ١٢",
-      },
-      {
-        period: "الحصة ٥",
-        className: "فصل ٢/١",
-        room: "قاعة ٢١",
-      },
-    ],
-  },
-  {
-    day: "الخميس",
-    slots: [
-      {
-        period: "الحصة ٢",
-        className: "فصل ١/١",
-        room: "قاعة ١٢",
-      },
-      {
-        period: "الحصة ٤",
-        className: "فصل ١/٣",
-        room: "قاعة ١٦",
-      },
-    ],
-  },
-];
-
-export const studentPeriodTimes = [
-  { period: "الحصة ١", time: "٧:٣٠" },
-  { period: "الحصة ٢", time: "٨:٣٠" },
-  { period: "الحصة ٣", time: "٩:٣٠" },
-  { period: "الحصة ٤", time: "١٠:٣٠" },
-  { period: "الحصة ٥", time: "١١:٣٠" },
-  { period: "الحصة ٦", time: "١٢:٣٠" },
-  { period: "الحصة ٧", time: "٠١:٣٠" },
-];
 
 export interface studentScheduleSlot {
   period: string;
@@ -519,6 +289,7 @@ export const studentHomeWork: HomeWorkItem[] = [
 export interface SubjectGradeItem {
   id: number;
   subject: string;
+  teacher: string;
   score: number;
   maxScore: number;
 }
@@ -527,48 +298,56 @@ export const studentGradesFirstTerm: SubjectGradeItem[] = [
   {
     id: 1,
     subject: "اللغة العربية",
+    teacher: "أ. هاني كمال",
     score: 48,
     maxScore: 50,
   },
   {
     id: 2,
     subject: "اللغة الإنجليزية",
+    teacher: "أ. رانيا سمير",
     score: 42,
     maxScore: 50,
   },
   {
     id: 3,
     subject: "الرياضيات",
+    teacher: "أ. محمود علي",
     score: 36,
     maxScore: 50,
   },
   {
     id: 4,
     subject: "العلوم",
+    teacher: "أ. ساره أحمد",
     score: 27,
     maxScore: 50,
   },
   {
     id: 5,
     subject: "الدراسات الاجتماعية",
+    teacher: "أ. ليلى منصور",
     score: 46,
     maxScore: 50,
   },
   {
     id: 6,
     subject: "التربية الدينية",
+    teacher: "أ. عماد فتحي",
     score: 49,
     maxScore: 50,
   },
   {
     id: 7,
     subject: "الحاسب الآلي",
+    teacher: "أ. نادية رشاد",
     score: 22,
     maxScore: 50,
   },
   {
     id: 8,
     subject: "التربية الفنية",
+    teacher: "أ. مي جلال",
     score: 39,
     maxScore: 50,
   },
@@ -578,83 +357,110 @@ export const studentGradesSecondTerm: SubjectGradeItem[] = [
   {
     id: 1,
     subject: "اللغة العربية",
+    teacher: "أ. هاني كمال",
     score: 74,
     maxScore: 80,
   },
   {
     id: 2,
     subject: "اللغة الإنجليزية",
+    teacher: "أ. رانيا سمير",
     score: 52,
     maxScore: 60,
   },
   {
     id: 3,
     subject: "الرياضيات",
+    teacher: "أ. محمود علي",
     score: 58,
     maxScore: 60,
   },
   {
     id: 4,
     subject: "العلوم",
+    teacher: "أ. ساره أحمد",
     score: 31,
     maxScore: 40,
   },
   {
     id: 5,
     subject: "الدراسات الاجتماعية",
+    teacher: "أ. ليلى منصور",
     score: 38,
     maxScore: 40,
   },
   {
     id: 6,
     subject: "التربية الدينية",
+    teacher: "أ. عماد فتحي",
     score: 40,
     maxScore: 40,
   },
   {
     id: 7,
     subject: "الحاسب الآلي",
+    teacher: "أ. نادية رشاد",
     score: 18,
     maxScore: 20,
   },
   {
     id: 8,
     subject: "التربية الفنية",
+    teacher: "أ. مي جلال",
     score: 15,
     maxScore: 20,
   },
 ];
 
-export const getGradeInfo = (score: number, maxScore: number = 50) => {
-  const percentage = (score / maxScore) * 100;
+type GradeInput = {
+  score?: number;
+  maxScore?: number;
+  grading?: string;
+};
 
-  if (percentage >= 85) {
+export const getGradeInfo = (options: GradeInput | string) => {
+  const grading = typeof options === "string" ? options : options.grading;
+  const score = typeof options === "object" ? options.score : undefined;
+  const maxScore = typeof options === "object" ? (options.maxScore ?? 50) : 50;
+
+  const percentage = score !== undefined ? (score / maxScore) * 100 : -1;
+  if (percentage >= 85 || grading === "ممتاز") {
     return {
       label: "ممتاز",
       colorClass: "text-emerald-600 bg-emerald-50 border-emerald-200",
+      bgColor: "bg-emerald-500",
+      textColor: "text-emerald-500",
     };
   }
-  if (percentage >= 75) {
+  if (percentage >= 75 || grading === "جيد جداً") {
     return {
       label: "جيد جداً",
       colorClass: "text-blue-600 bg-blue-50 border-blue-200",
+      bgColor: "bg-blue-500",
+      textColor: "text-blue-500",
     };
   }
-  if (percentage >= 65) {
+  if (percentage >= 65 || grading === "جيد") {
     return {
       label: "جيد",
       colorClass: "text-amber-600 bg-amber-50 border-amber-200",
+      bgColor: "bg-amber-500",
+      textColor: "text-amber-500",
     };
   }
-  if (percentage >= 50) {
+  if (percentage >= 50 || grading === "مقبول") {
     return {
       label: "مقبول",
       colorClass: "text-orange-600 bg-orange-50 border-orange-200",
+      bgColor: "bg-orange-500",
+      textColor: "text-orange-500",
     };
   }
   return {
     label: "راسب",
     colorClass: "text-rose-600 bg-rose-50 border-rose-200",
+    bgColor: "bg-rose-500",
+    textColor: "text-rose-500",
   };
 };
 
@@ -746,3 +552,567 @@ export const getInitials = (name: string) => {
 
   return `${firstName}.${secondName}`;
 };
+
+export interface TeachersReviewsItem {
+  id: number;
+  subject: string;
+  teacher: string;
+  date: string;
+  description: string;
+  score: number;
+  maxScore: number;
+}
+
+export const teachersReviews: TeachersReviewsItem[] = [
+  {
+    id: 1,
+    subject: "الرياضيات",
+    teacher: "محمود علي",
+    date: "12/10/2024",
+    description:
+      "عمر طالب مجتهد جداً ويشارك بفعالية في الحصة. مستواه في الجبر خلال الشهر الحالي ملحوظ، وتظهر شغفاً كبيراً بالتجارب العلمية. أنصحه بالاستمرار على هذا النهج.",
+    score: 45,
+    maxScore: 50,
+  },
+  {
+    id: 2,
+    subject: "العلوم",
+    teacher: "سارة أحمد",
+    date: "09/10/2024",
+    description:
+      "سلوك عمر داخل المعمل ممتاز، يلتزم بجميع قواعد الأمان ويجري التجارب باحترافية. يحتاج فقط للتركيز أكثر في كتابة التقارير حيث تكون أحياناً غير مكتملة.",
+    score: 40,
+    maxScore: 50,
+  },
+  {
+    id: 3,
+    subject: "اللغة العربية",
+    teacher: "هاني كمال",
+    date: "06/10/2024",
+    description:
+      "يمتلك عمر حصيلة لغوية ممتازة وأسلوب تعبير راقٍ في الكتابة. يشارك بشكل إيجابي في مناقشات القصص والنصوص، أتمنى له مزيداً من التميز.",
+    score: 48,
+    maxScore: 50,
+  },
+  {
+    id: 4,
+    subject: "اللغة الإنجليزية",
+    teacher: "رانيا سمير",
+    date: "03/10/2024",
+    description:
+      "Omar has a good command of English vocabulary and participates actively in class discussions. His writing skills are developing well. I encourage him to practice speaking more confidently.",
+    score: 42,
+    maxScore: 50,
+  },
+  {
+    id: 5,
+    subject: "الدراسات الاجتماعية",
+    teacher: "ليلى منصور",
+    date: "28/09/2024",
+    description:
+      "عمر طالب منتبه في الحصة ومستواه الدراسي جيد. أنصحه بمراجعة الخرائط الجغرافية بشكل منتظم وتدوين ملاحظات أكثر تفصيلاً خلال الشرح.",
+    score: 35,
+    maxScore: 50,
+  },
+  {
+    id: 6,
+    subject: "التربية الدينية",
+    teacher: "عماد فتحي",
+    date: "22/09/2024",
+    description:
+      "طالب متميز من الناحية الأخلاقية والدراسية، يحفظ بشكل ممتاز ويجيب على الأسئلة بدقة. يُعد قدوة لزملائه في الالتزام والمسؤولية.",
+    score: 49,
+    maxScore: 50,
+  },
+];
+
+// ################################################## //
+
+interface TSDataState {
+  token: string;
+  systemRole: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  userData: any;
+
+  setToken: (newValue: string) => void;
+  setSystemRole: (newValue: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setUserData: (newValue: any) => void;
+
+  logout: () => void;
+}
+
+export const useTsData = create<TSDataState>()(
+  persist(
+    (set) => ({
+      token: "",
+      systemRole: "",
+      userData: null,
+
+      setToken: (newValue) => set({ token: newValue }),
+      setSystemRole: (newValue) => set({ systemRole: newValue }),
+      setUserData: (newValue) => set({ userData: newValue }),
+
+      logout: () => set({ token: "", systemRole: "", userData: null }),
+    }),
+    {
+      name: "ts-data",
+    },
+  ),
+);
+
+interface LoaderState {
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  startLoadingNavigation: (
+    asyncTask: () => Promise<unknown> | void,
+    delay?: number,
+    timeoutDuration?: number,
+  ) => Promise<void>;
+}
+
+export const useLoader = create<LoaderState>()((set) => ({
+  isLoading: false,
+  setIsLoading: (loading) => set({ isLoading: loading }),
+
+  startLoadingNavigation: async (
+    asyncTask,
+    delay = 1500,
+    timeoutDuration = 10000,
+  ) => {
+    set({ isLoading: true });
+
+    const minDelayPromise = new Promise((resolve) =>
+      setTimeout(resolve, delay),
+    );
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("TIMEOUT_ERROR")), timeoutDuration),
+    );
+
+    try {
+      const taskWithTimeout = Promise.race([
+        Promise.resolve().then(() => asyncTask()),
+        timeoutPromise,
+      ]);
+
+      await taskWithTimeout;
+      await minDelayPromise;
+    } catch (error) {
+      console.error("Navigation/Data fetching error:", error);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const err = error as any;
+
+      if (err?.message === "TIMEOUT_ERROR") {
+        toast.error("عذراً، الخادم لا يستجيب حالياً. يرجى المحاولة لاحقاً", {
+          duration: 4000,
+          position: "top-center",
+        });
+      } else if (
+        err?.response?.status === 400 ||
+        err?.response?.status === 401
+      ) {
+        toast.error(
+          "بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور",
+          {
+            duration: 4000,
+            position: "top-center",
+          },
+        );
+      } else if (err?.response?.status === 404) {
+        toast.error("رابط الخدمة غير موجود، يرجى التأكد من الـ Domain", {
+          duration: 4000,
+          position: "top-center",
+        });
+      } else {
+        toast.error("حدث خطأ أثناء الاتصال بالخادم، يرجى إعادة المحاولة", {
+          duration: 4000,
+          position: "top-center",
+        });
+      }
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+}));
+
+interface modalState {
+  showModal: boolean;
+  setModal: (newValue: boolean) => void;
+}
+
+export const useAudienceModal = create<modalState>((set) => ({
+  showModal: false,
+  setModal: (newValue) => set({ showModal: newValue }),
+}));
+
+export const subjectColors: Record<string, { bg: string; text: string }> = {
+  "اللغة العربية": { bg: "bg-emerald-50", text: "text-emerald-600" },
+  الرياضيات: { bg: "bg-blue-50", text: "text-blue-600" },
+  العلوم: { bg: "bg-amber-50", text: "text-amber-600" },
+  "الدراسات الاجتماعية": { bg: "bg-rose-50", text: "text-rose-600" },
+  "اللغة الإنجليزية": { bg: "bg-purple-50", text: "text-purple-600" },
+  "التربية الدينية": { bg: "bg-teal-50", text: "text-teal-600" },
+  "التربية الفنية": { bg: "bg-orange-50", text: "text-orange-600" },
+  "التربية الرياضية": { bg: "bg-lime-50", text: "text-lime-600" },
+  "الحاسب الآلي": { bg: "bg-sky-50", text: "text-sky-600" },
+  "غير محدد": { bg: "bg-slate-50", text: "text-slate-400" },
+  فسحه: { bg: "bg-slate-100", text: "text-slate-400" },
+};
+
+export const days = ["الاحد", "الاتنين", "الثلاثاء", "الاربعاء", "الخميس"];
+
+interface HelpersState {
+  toArabicDigits: (value: string | number) => string;
+  wordsToArabicDigits: (value: string) => string;
+  monthNumberToName: (month: string | number) => string;
+  convertAll: (value: string | number) => string;
+}
+
+const wordsMap: Record<string, string> = {
+  first: "١",
+  second: "٢",
+  third: "٣",
+  fourth: "٤",
+  fifth: "٥",
+  sixth: "٦",
+  seventh: "٧",
+};
+
+const monthsMap: Record<string, string> = {
+  "1": "يناير",
+  "01": "يناير",
+  "2": "فبراير",
+  "02": "فبراير",
+  "3": "مارس",
+  "03": "مارس",
+  "4": "أبريل",
+  "04": "أبريل",
+  "5": "مايو",
+  "05": "مايو",
+  "6": "يونيو",
+  "06": "يونيو",
+  "7": "يوليو",
+  "07": "يوليو",
+  "8": "أغسطس",
+  "08": "أغسطس",
+  "9": "سبتمبر",
+  "09": "سبتمبر",
+  "10": "أكتوبر",
+  "11": "نوفمبر",
+  "12": "ديسمبر",
+};
+
+const digitsMap = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+
+export const useTextHelpers = create<HelpersState>(() => ({
+  toArabicDigits: (value) => {
+    const str = String(value).trim();
+
+    let targetValue = str;
+
+    if (str.includes("-") || str.includes("/")) {
+      const parts = str.split(/[-/]/);
+      if (parts.length >= 3) {
+        targetValue = parts[2];
+      }
+    }
+
+    if (!isNaN(Number(targetValue))) {
+      targetValue = String(Number(targetValue));
+    }
+
+    return targetValue.replace(/[0-9]/g, (d) => digitsMap[Number(d)]);
+  },
+
+  wordsToArabicDigits: (value) => {
+    return String(value).replace(
+      /\b(first|second|third|fourth|fifth|sixth|seventh)\b/gi,
+      (matched) => wordsMap[matched.toLowerCase()] || matched,
+    );
+  },
+
+  monthNumberToName: (monthOrDate) => {
+    const str = String(monthOrDate).trim();
+
+    const isFullDate = /^\d{2,4}[-/]\d{1,2}[-/]\d{2,4}$/.test(str);
+
+    if (isFullDate) {
+      return str
+        .replace(/-/g, "/")
+        .replace(/[0-9]/g, (d) => digitsMap[Number(d)]);
+    }
+
+    let monthKey = str;
+    if (str.includes("-")) {
+      const parts = str.split("-");
+      if (parts.length >= 2) {
+        monthKey = parts[1];
+      }
+    } else if (str.includes("/")) {
+      const parts = str.split("/");
+      if (parts.length >= 2) {
+        monthKey = parts[1];
+      }
+    }
+
+    return monthsMap[monthKey] || monthsMap[str] || str;
+  },
+
+  convertAll: (value) => {
+    const text = String(value).trim();
+
+    if (monthsMap[text]) {
+      return monthsMap[text];
+    }
+
+    const convertedWords = text.replace(
+      /\b(first|second|third|fourth|fifth|sixth|seventh)\b/gi,
+      (matched) => wordsMap[matched.toLowerCase()] || matched,
+    );
+
+    return convertedWords.replace(/[0-9]/g, (d) => digitsMap[Number(d)]);
+  },
+}));
+
+interface PeriodItem {
+  period: string;
+  time: string;
+  subject: string;
+  rawPeriod: number;
+}
+
+export interface DaySchedule {
+  day: string;
+  periods: PeriodItem[];
+}
+
+interface scheduleState {
+  schedule: DaySchedule[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setSchedule: (rawSchedules: any[]) => void;
+}
+
+export const useSchedule = create<scheduleState>()((set) => ({
+  schedule: [],
+
+  setSchedule: (rawSchedules) => {
+    if (!Array.isArray(rawSchedules)) {
+      set({ schedule: [] });
+      return;
+    }
+    const { wordsToArabicDigits, toArabicDigits } = useTextHelpers.getState();
+
+    const grouped = rawSchedules.reduce(
+      (acc: Record<string, PeriodItem[]>, item) => {
+        const day = item?.day;
+        if (!day) return acc;
+
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+
+        acc[day].push({
+          period: wordsToArabicDigits(item.period || ""),
+          time: toArabicDigits(item.time?.slice(0, 5) || ""),
+          subject: item.ts_subject?.name || "غير محدد",
+          rawPeriod: Number(item.period) || 0,
+        });
+
+        return acc;
+      },
+      {},
+    );
+
+    const formattedSchedule: DaySchedule[] = Object.keys(grouped).map(
+      (day) => ({
+        day: day,
+        periods: grouped[day].sort(
+          (a, b) => (a.rawPeriod ?? 0) - (b.rawPeriod ?? 0),
+        ),
+      }),
+    );
+
+    set({ schedule: formattedSchedule });
+  },
+}));
+
+export interface FormattedHomework {
+  id: number;
+  documentId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attachments: any;
+  subject: string;
+  teacher: string;
+}
+
+interface StudentHomeworkState {
+  studentHomework: FormattedHomework[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setStudentHomework: (Assignments: any[]) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateHomeworkAttachment: (
+    homeworkId: number | string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    newAttachments: any,
+  ) => void;
+}
+
+export const useStudentHomework = create<StudentHomeworkState>((set) => ({
+  studentHomework: [],
+
+  setStudentHomework: (Assignments) => {
+    const formattedData: FormattedHomework[] = (Assignments || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any) => ({
+        id: item.id,
+        documentId: item.documentId,
+        title: item.title,
+        description: item.description,
+        dueDate: item.dueDate,
+        attachments: item.ts_submissions,
+        subject: item.ts_subject?.name,
+        teacher: item.ts_teacher?.fullName.split(" ").slice(0, 2).join(" "),
+      }),
+    );
+
+    set({ studentHomework: formattedData });
+  },
+
+  updateHomeworkAttachment: (homeworkId, newAttachments) => {
+    set((state) => ({
+      studentHomework: state.studentHomework.map((hw) =>
+        hw.id === homeworkId ? { ...hw, attachments: newAttachments } : hw,
+      ),
+    }));
+  },
+}));
+
+export interface FormattedGrades {
+  id: number;
+  documentId: string;
+  subject: string;
+  teacher: string;
+  final_score: number;
+  midterm_score: number;
+  perform_score: number;
+  total_score: number;
+  term: string;
+  final_total_score: number;
+  midterm_total_score: number;
+  perform_total_score: number;
+  studentName: string;
+}
+
+interface StudentGradesState {
+  studentGrades: FormattedGrades[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setStudentGrades: (Grades: any[]) => void;
+}
+
+export const useStudentGrades = create<StudentGradesState>((set) => ({
+  studentGrades: [],
+
+  setStudentGrades: (Grades) => {
+    const formattedData: FormattedGrades[] = (Grades || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any) => ({
+        id: item.id,
+        documentId: item.documentId,
+        term: item.term,
+        total_score: item.total_score,
+        subject: item.ts_subject?.name,
+        teacher: item.ts_teachers?.[0]?.fullName
+          ? item.ts_subject.ts_teachers[0].fullName
+              .split(" ")
+              .slice(0, 2)
+              .join(" ")
+          : "غير محدد",
+        final_score: item.final_score,
+        midterm_score: item.midterm_score,
+        perform_score: item.perform_score,
+        final_total_score: item.total_score == 50 ? 25 : 40,
+        midterm_total_score: item.total_score == 50 ? 15 : 20,
+        perform_total_score: 10,
+        studentName: item.ts_student?.fullName,
+      }),
+    );
+
+    set({ studentGrades: formattedData });
+  },
+}));
+
+export interface FormattedReviews {
+  id: number;
+  documentId: string;
+  subject: string;
+  teacher: string;
+  description: string;
+  teacherGrading: string;
+  createdDate: string;
+}
+
+interface StudentReviewsState {
+  studentReviews: FormattedReviews[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setStudentReviews: (Reviews: any[]) => void;
+}
+
+export const useStudentReviews = create<StudentReviewsState>((set) => ({
+  studentReviews: [],
+
+  setStudentReviews: (Reviews) => {
+    const formattedData: FormattedReviews[] = (Reviews || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any) => ({
+        id: item.id,
+        documentId: item.documentId,
+        description: item.description,
+        teacherGrading: item.teacher_grading,
+        subject: item.ts_teacher?.ts_subject.name,
+        teacher: item.ts_teacher?.fullName.split(" ").slice(0, 2).join(" "),
+        createdDate: item.createdAt.split("T")[0].slice(0, 10),
+      }),
+    );
+
+    set({ studentReviews: formattedData });
+  },
+}));
+
+export interface FormattedTeacherClasses {
+  id: number;
+  documentId: string;
+  name: string;
+  stage: string;
+  studentGroup: [];
+  studentCount: number;
+}
+
+interface TeacherClassesState {
+  TeacherClasses: FormattedTeacherClasses[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setTeacherClasses: (Classes: any[]) => void;
+}
+
+export const useTeacherClasses = create<TeacherClassesState>((set) => ({
+  TeacherClasses: [],
+
+  setTeacherClasses: (Classes) => {
+    const formattedData: FormattedTeacherClasses[] = (Classes || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (item: any) => ({
+        id: item.id,
+        documentId: item.documentId,
+        name: item.name,
+        stage: item.ts_stage?.name,
+        studentCount: item.ts_students?.length,
+        studentGroup: item.ts_students,
+      }),
+    );
+
+    set({ TeacherClasses: formattedData });
+  },
+}));

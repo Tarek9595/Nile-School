@@ -7,12 +7,17 @@ import { IoBookOutline } from "react-icons/io5";
 import { MdOutlineFileUpload, MdOutlineCheckCircle } from "react-icons/md";
 import { RiCalendarScheduleLine } from "react-icons/ri";
 import Swal from "sweetalert2";
-import { studentHomeWork, toArabicDigits } from "@/store";
+import { useStudentHomework, useTextHelpers, useTsData, domain } from "@/store";
 
 export default function StudentSelfHWorks() {
+  const { token } = useTsData();
+  const { studentHomework, updateHomeworkAttachment } = useStudentHomework();
+  const { toArabicDigits, monthNumberToName } = useTextHelpers();
+
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "delivered">(
     "all",
   );
+  const [loading, setLoading] = useState<Record<number | string, boolean>>({});
 
   const tabs = [
     { id: "all", label: "الكل" },
@@ -28,27 +33,28 @@ export default function StudentSelfHWorks() {
   const [attachedFiles, setAttachedFiles] = useState<
     Record<number | string, File>
   >({});
-
   const [deliveredHomeworks, setDeliveredHomeworks] = useState<
     Record<number | string, boolean>
   >({});
 
   const filteredHomeworks = useMemo(() => {
-    return studentHomeWork.filter((item) => {
-      const isSubmitted = deliveredHomeworks[item.id] ?? item.isDeliver;
+    return studentHomework.filter((item) => {
+      const isSubmitted =
+        (deliveredHomeworks[item.id] ?? false) || item.attachments.length > 0;
 
       if (activeTab === "pending") return !isSubmitted;
       if (activeTab === "delivered") return isSubmitted;
       return true;
     });
-  }, [activeTab, deliveredHomeworks]);
+  }, [studentHomework, activeTab, deliveredHomeworks]);
 
   const statsData = useMemo(() => {
-    const total = studentHomeWork.length;
+    const total = studentHomework.length;
     let deliveredCount = 0;
 
-    studentHomeWork.forEach((item) => {
-      const isSubmitted = deliveredHomeworks[item.id] ?? item.isDeliver;
+    studentHomework.forEach((item) => {
+      const isSubmitted =
+        (deliveredHomeworks[item.id] ?? false) || item.attachments.length > 0;
       if (isSubmitted) deliveredCount++;
     });
 
@@ -58,20 +64,20 @@ export default function StudentSelfHWorks() {
       {
         label: "المعلّقة",
         value: toArabicDigits(pendingCount),
-        color: "bg-amber-50 text-amber-700",
+        color: "bg-[#FFF4ED] text-[#FF6B00]",
       },
       {
         label: "المُسلّمة",
         value: toArabicDigits(deliveredCount),
-        color: "bg-emerald-50 text-emerald-700",
+        color: "bg-[#E6F9F0] text-[#00B050]",
       },
       {
         label: "الإجمالي",
         value: toArabicDigits(total),
-        color: "bg-blue-50 text-blue-700",
+        color: "bg-[#EDF5FF] text-[#0066FF]",
       },
     ];
-  }, [deliveredHomeworks]);
+  }, [studentHomework, deliveredHomeworks, toArabicDigits]);
 
   const handleAttachmentClick = (homeworkId: number | string) => {
     setSelectedHomeworkId(homeworkId);
@@ -94,10 +100,12 @@ export default function StudentSelfHWorks() {
   };
 
   const handleSubmitHomework = (homeworkId: number | string) => {
-    if (!attachedFiles[homeworkId]) {
+    const fileToUpload = attachedFiles[homeworkId];
+
+    if (!fileToUpload) {
       Swal.fire({
         title: "تنبيه!",
-        text: "برجاء رفع الملف أولاً قبل تسليم الواجب",
+        text: "برجاء اختيار الملف أولاً قبل تسليم الواجب",
         icon: "warning",
         confirmButtonText: "حسناً",
         confirmButtonColor: "#1e3a5f",
@@ -107,27 +115,86 @@ export default function StudentSelfHWorks() {
 
     Swal.fire({
       title: "تأكيد تسليم الواجب",
-      text: `هل أنت تأكد من تسليم ملف (${attachedFiles[homeworkId].name})؟`,
+      text: `هل أنت تأكد من تسليم ملف (${fileToUpload.name})؟`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "نعم، قم بالتسليم",
       cancelButtonText: "إلغاء",
       confirmButtonColor: "#1e3a5f",
       cancelButtonColor: "#d33",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setDeliveredHomeworks((prev) => ({
-          ...prev,
-          [homeworkId]: true,
-        }));
+        try {
+          setLoading((prev) => ({ ...prev, [homeworkId]: true }));
 
-        Swal.fire({
-          title: "تم التسليم بنجاح!",
-          text: "تم إرسال الواجب للمعلم بنجاح",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+          const cleanDomain = domain.endsWith("/")
+            ? domain.slice(0, -1)
+            : domain;
+          const formData = new FormData();
+          formData.append("files", fileToUpload);
+
+          const uploadRes = await fetch(`${cleanDomain}/api/upload`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (!uploadRes.ok) throw new Error("فشل رفع الملف إلى السيرفر");
+
+          const uploadData = await uploadRes.json();
+          const uploadedFileId = uploadData[0]?.id;
+
+          const submissionPayload = {
+            data: {
+              ts_assignment: homeworkId,
+              submittedFile: [uploadedFileId],
+              statues: "Pending",
+              submittedAt: new Date().toISOString(),
+            },
+          };
+
+          const submitRes = await fetch(`${cleanDomain}/api/ts-submissions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(submissionPayload),
+          });
+
+          if (!submitRes.ok) throw new Error("فشل تسليم الواجب");
+
+          const responseData = await submitRes.json();
+
+          console.log(responseData);
+
+          updateHomeworkAttachment(homeworkId, uploadData[0]);
+          setDeliveredHomeworks((prev) => ({
+            ...prev,
+            [homeworkId]: true,
+          }));
+
+          Swal.fire({
+            title: "تم التسليم بنجاح!",
+            text: "تم رفع الملف وإرسال الواجب للمعلم بنجاح",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          Swal.fire({
+            title: "خطأ!",
+            text: error.message || "حدث خطأ أثناء التسليم، حاول مرة أخرى",
+            icon: "error",
+            confirmButtonText: "حسناً",
+            confirmButtonColor: "#1e3a5f",
+          });
+        } finally {
+          setLoading((prev) => ({ ...prev, [homeworkId]: false }));
+        }
       }
     });
   };
@@ -197,7 +264,9 @@ export default function StudentSelfHWorks() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredHomeworks.map((el) => {
             const attachedFile = attachedFiles[el.id];
-            const isSubmitted = deliveredHomeworks[el.id] ?? el.isDeliver;
+            const isSubmitted =
+              (deliveredHomeworks[el.id] ?? false) || el.attachments.length > 0;
+            const isItemLoading = loading[el.id] ?? false;
 
             return (
               <div
@@ -244,11 +313,11 @@ export default function StudentSelfHWorks() {
                 <div className="flex flex-col items-start gap-2">
                   <div className="flex justify-center items-center gap-1.5 text-second-texty-color">
                     <FaRegUser />
-                    <span>{el.teacher}</span>
+                    <span>أ/ {el.teacher}</span>
                   </div>
                   <div className="flex justify-center items-center gap-1.5 text-second-texty-color">
                     <RiCalendarScheduleLine />
-                    <span>تاريخ التسليم: {toArabicDigits(el.deliverDate)}</span>
+                    <span>تاريخ التسليم: {monthNumberToName(el.dueDate)}</span>
                   </div>
                 </div>
 
@@ -273,23 +342,27 @@ export default function StudentSelfHWorks() {
                   ) : (
                     <>
                       <button
+                        disabled={isItemLoading}
                         onClick={() => handleAttachmentClick(el.id)}
                         title={
-                          attachedFile ? attachedFile.name : "تحميل المرفقات"
+                          attachedFile ? attachedFile.name : "اختيار ملف المرفق"
                         }
-                        className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-200 transition-colors duration-200 flex items-center gap-1.5 flex-1 justify-center cursor-pointer min-w-0 overflow-hidden"
+                        className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-200 transition-colors duration-200 flex items-center gap-1.5 flex-1 justify-center cursor-pointer min-w-0 overflow-hidden disabled:opacity-50"
                       >
                         <GoPaperclip className="shrink-0" />
                         <span className="truncate max-w-37.5 sm:max-w-50">
-                          {attachedFile ? attachedFile.name : "تحميل المرفقات"}
+                          {attachedFile
+                            ? attachedFile.name
+                            : "اختيار ملف المرفق"}
                         </span>
                       </button>
                       <button
+                        disabled={isItemLoading}
                         onClick={() => handleSubmitHomework(el.id)}
-                        className="bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#162d4a] transition-colors duration-200 flex items-center gap-1.5 flex-1 justify-center cursor-pointer"
+                        className="bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#162d4a] transition-colors duration-200 flex items-center gap-1.5 flex-1 justify-center cursor-pointer disabled:opacity-50"
                       >
                         <MdOutlineFileUpload />
-                        تسليم الواجب
+                        {isItemLoading ? "جاري الرفع..." : "تسليم الواجب"}
                       </button>
                     </>
                   )}

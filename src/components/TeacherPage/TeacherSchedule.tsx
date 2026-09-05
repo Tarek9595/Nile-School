@@ -1,4 +1,4 @@
-import { days, toArabicDigits, periodTimes, schedule } from "@/store";
+import { days, periodTimes, useTextHelpers } from "@/store";
 import { CalendarDays } from "lucide-react";
 
 const slotColors: Record<
@@ -53,6 +53,9 @@ const slotColors: Record<
 };
 
 export default function TeacherSchedule() {
+  const { toArabicDigits } = useTextHelpers();
+
+  const schedule = [];
   return (
     <div className="flex flex-col gap-5 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">

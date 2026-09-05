@@ -1,7 +1,16 @@
+"use client";
+
 import { CiChat1 } from "react-icons/ci";
-import { teacherReviews, getInitials, getGradeInfo } from "@/store";
+import {
+  getInitials,
+  getGradeInfo,
+  useStudentReviews,
+  useTextHelpers,
+} from "@/store";
 
 export default function StudentReviews() {
+  const { studentReviews } = useStudentReviews();
+  const { monthNumberToName } = useTextHelpers();
   const isEnglish = (text: string) => /^[A-Za-z]/.test(text.trim());
   return (
     <div className="flex flex-col gap-4 p-6 bg-white">
@@ -18,12 +27,12 @@ export default function StudentReviews() {
         data-lenis-prevent
         className="grid grid-cols-1 gap-3 max-h-35 lg:grid-cols-2 overflow-y-auto pl-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent"
       >
-        {teacherReviews.map((el) => {
-          const isEng = isEnglish(el.review);
-          const gradeInfo = getGradeInfo(el.score, el.maxScore);
+        {studentReviews.map((el) => {
+          const isEng = isEnglish(el.description);
+          const gradeInfo = getGradeInfo(el.teacherGrading);
           return (
             <div
-              key={el.id}
+              key={el.documentId}
               className="flex flex-col gap-4 rounded-lg p-3 bg-[#F8FAFC] shadow-sm"
             >
               <div className="flex justify-between items-center gap-2">
@@ -43,7 +52,7 @@ export default function StudentReviews() {
                   </div>
                 </div>
                 <div className="text-second-texty-color text-[10px] font-medium">
-                  {el.date}
+                  {monthNumberToName(el.createdDate)}
                 </div>
               </div>
               <div
@@ -52,7 +61,7 @@ export default function StudentReviews() {
                   isEng ? "text-left" : "text-right"
                 }`}
               >
-                {el.review}
+                {el.description}
               </div>
             </div>
           );

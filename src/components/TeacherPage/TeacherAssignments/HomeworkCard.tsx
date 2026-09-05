@@ -1,4 +1,6 @@
-import { toArabicDigits } from "@/store";
+"use client";
+
+import { useTextHelpers } from "@/store";
 import { CheckCircle2, Clock, Trash2 } from "lucide-react";
 
 interface HomeworkItem {
@@ -22,6 +24,7 @@ export default function HomeworkCard({
 }) {
   const rate = hw.total ? Math.round((hw.submitted / hw.total) * 100) : 0;
   const done = hw.submitted === hw.total;
+  const { toArabicDigits } = useTextHelpers();
 
   return (
     <div className="border border-slate-100 rounded-xl p-4 hover:border-slate-200 hover:shadow-sm transition-all">

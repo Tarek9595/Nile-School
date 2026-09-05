@@ -3,7 +3,16 @@
 import axios from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
-import { domain, useTsData, useLoader } from "@/store/index";
+import {
+  domain,
+  useTsData,
+  useLoader,
+  useSchedule,
+  useStudentHomework,
+  useStudentGrades,
+  useStudentReviews,
+  useTeacherClasses,
+} from "@/store";
 import { useRouter } from "next/navigation";
 import { FaBell, FaRegEye, FaRegEyeSlash, FaSchool } from "react-icons/fa6";
 import { GoShieldCheck } from "react-icons/go";
@@ -16,6 +25,11 @@ interface LoginFormValues {
 }
 
 export default function Login() {
+  const { setStudentHomework } = useStudentHomework();
+  const { setStudentReviews } = useStudentReviews();
+  const { setStudentGrades } = useStudentGrades();
+  const { setTeacherClasses } = useTeacherClasses();
+  const { setSchedule } = useSchedule();
   const [crrEmail, setCrrEmail] = useState("");
   const { startLoadingNavigation } = useLoader();
   const { setToken, setSystemRole, setUserData } = useTsData();
@@ -50,7 +64,24 @@ export default function Login() {
       const jwt = loginRes.data.jwt;
       setToken(jwt);
 
-      const userUrl = `${domain}api/users/me?populate[ts_teacher][populate]=*&populate[ts_student][populate]=*`;
+      const queryParams = new URLSearchParams({
+        "populate[ts_teacher][populate][ts_classes][populate]": "*",
+        "populate[ts_teacher][populate][ts_subject][populate]": "*",
+        "populate[ts_teacher][populate][ts_assignments][populate]": "*",
+        "populate[ts_teacher][populate][ts_grades][populate]": "*",
+
+        "populate[ts_student][populate][ts_class][populate][ts_schedules][populate][ts_subject][populate]":
+          "*",
+        "populate[ts_student][populate][ts_class][populate][ts_assignments][populate]":
+          "*",
+        "populate[ts_student][populate][ts_grades][populate][ts_subject][populate][ts_teachers]":
+          "*",
+        "populate[ts_student][populate][ts_feedbacks][populate][ts_teacher][populate]":
+          "*",
+      }).toString();
+
+      const userUrl = `${domain}api/users/me?${queryParams}`;
+
       const userRes = await axios.get(userUrl, {
         headers: { Authorization: `Bearer ${jwt}` },
       });
@@ -69,6 +100,23 @@ export default function Login() {
       if (role && currentUserData) {
         setUserData(currentUserData);
         setSystemRole(role);
+
+        const studentSchedules = currentUserData?.ts_class?.ts_schedules || [];
+        setSchedule(studentSchedules);
+
+        const studentHomeworkValue =
+          currentUserData?.ts_class?.ts_assignments || [];
+        setStudentHomework(studentHomeworkValue);
+
+        const studentGradesValue = currentUserData?.ts_grades;
+        setStudentGrades(studentGradesValue);
+
+        const studentReviewsValue = currentUserData?.ts_feedbacks;
+        setStudentReviews(studentReviewsValue);
+
+        const TeacherClassesValue = currentUserData?.ts_classes;
+        setTeacherClasses(TeacherClassesValue);
+
         router.push(`/${role.toLowerCase()}`);
       }
     });

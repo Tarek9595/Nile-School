@@ -1,13 +1,25 @@
 "use client";
-import { useTsData } from "@/store";
+import {
+  useSchedule,
+  useStudentGrades,
+  useStudentHomework,
+  useStudentReviews,
+  useTeacherClasses,
+  useTsData,
+} from "@/store";
 import { FaUserCheck } from "react-icons/fa6";
 import { ImUsers } from "react-icons/im";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { CalendarCheck, BookOpenText, TrendingUp } from "lucide-react";
 
 export default function Header() {
+  const { studentHomework } = useStudentHomework();
+  const { studentGrades } = useStudentGrades();
+  const { schedule } = useSchedule();
+  const { studentReviews } = useStudentReviews();
+  const { TeacherClasses } = useTeacherClasses();
   const { userData, systemRole } = useTsData();
-  const name = userData?.fullName || "";
+  const name = userData?.fullName.split(" ").slice(0, 2).join(" ") || "";
   const subject = userData?.ts_subject?.name || "";
 
   const teacherContent = [
@@ -57,7 +69,14 @@ export default function Header() {
   const crrContent = isTeacher ? teacherContent : studentContent;
   return (
     <div className="flex flex-col gap-3 pb-3 shadow-gray-200 shadow-xl">
-      <div className="bg-white p-6">
+      <div
+        className="bg-white p-6"
+        onClick={() => {
+          console.log(userData);
+          console.log(userData.ts_grades);
+          console.log(studentGrades);
+        }}
+      >
         <h1 className="text-[20px] font-black">
           أهلاً، {isTeacher ? `أ/ ${name}` : name}
         </h1>
@@ -65,7 +84,7 @@ export default function Header() {
         <h2 className="text-[14px] font-medium text-texty-color">
           {isTeacher
             ? `مدرس ${subject} · للمرحلة الاعدادية`
-            : "طالب · للمرحلة الاعدادية"}
+            : `طالب · للمرحلة الاعدادية - فصل ${userData?.ts_class?.name}`}
         </h2>
       </div>
 
